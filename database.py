@@ -4,23 +4,27 @@ import streamlit as st
 from supabase import create_client, Client
 from dotenv import load_dotenv
 
-# 1. ALWAYS load environment variables first
+# 1. Load environment variables from local .env
 load_dotenv()
 
-def get_secret(key: str):
-    """Safely retrieves secrets from Streamlit Cloud or local environment variables."""
+# 2. Safe secret retrieval helper (Local .env vs Streamlit Cloud secrets)
+def get_secret(key: str) -> str | None:
+    """Safely retrieves secrets from local environment variables or Streamlit Cloud."""
+    val = os.getenv(key)
+    if val:
+        return val.strip()
     try:
-        if hasattr(st, "secrets") and key in st.secrets:
-            return st.secrets[key]
+        if key in st.secrets:
+            return st.secrets[key].strip()
     except Exception:
         pass
-    return os.getenv(key)
+    return None
 
-# 2. Retrieve credentials
+# 3. Retrieve credentials
 SUPABASE_URL = get_secret("SUPABASE_URL")
 SUPABASE_KEY = get_secret("SUPABASE_KEY")
 
-# 3. Validate credentials before creating the client
+# 4. Validate credentials before initializing client
 if not SUPABASE_URL or not SUPABASE_URL.startswith("https://"):
     st.error(f"❌ Invalid or missing SUPABASE_URL: '{SUPABASE_URL}'")
     st.info("Check your .env or .streamlit/secrets.toml file and ensure SUPABASE_URL starts with 'https://'")
@@ -30,12 +34,12 @@ if not SUPABASE_KEY:
     st.error("❌ Missing SUPABASE_KEY in .env or secrets.toml")
     st.stop()
 
+# 5. Initialize Supabase client with Streamlit caching
 @st.cache_resource
 def init_supabase() -> Client:
     return create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# Initialize Supabase client safely
-supabase = init_supabase()
+supabase: Client = init_supabase()
 
 # ==========================================
 # DATABASE CRUD FUNCTIONS

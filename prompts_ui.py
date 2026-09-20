@@ -36,12 +36,10 @@ def summarize_text(text: str, max_chars: int = 1200) -> str:
     if len(text) <= max_chars:
         return text
     try:
-        # Use a fast, lightweight model specifically for context summarization
         summary_llm = ChatGroq(model="qwen/qwen3.8-27b", temperature=0.2)
         summary = summary_llm.invoke(f"Summarize the key takeaways of this AI response in 2-3 short sentences:\n\n{text}")
         return f"[Summary of previous response]: {summary.content}"
     except Exception:
-        # Fallback character truncation in case of network issues
         return text[:max_chars] + "... [truncated for context size]"
 
 # ==========================================
@@ -137,18 +135,12 @@ if not current_messages:
         st.info("📝 **Summarize & Draft**\n\nSummarize long articles, draft professional reports, or outline ideas.")
         st.info("🧮 **Math & Science**\n\nSolve equations and formulas with step-by-step LaTeX formatting.")
 else:
-    # Render existing messages
+    # Render existing messages cleanly once
     for msg in current_messages:
         with st.chat_message(msg["role"]):
             st.markdown(fix_latex(msg["content"]))
-            
 
-# Render existing messages
-for msg in current_messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(fix_latex(msg["content"]))
-
-# Handle user input
+# --- HANDLE USER INPUT ---
 if user_input := st.chat_input("Type your message..."):
     # 1. Update title if this is the first message in this chat session
     if len(current_messages) == 0:
@@ -159,7 +151,7 @@ if user_input := st.chat_input("Type your message..."):
     with st.chat_message("user"):
         st.markdown(user_input)
 
-    # 3. Format last 8 messages with automated summarization/capping
+    # 3. Format last 5 messages with automated summarization/capping
     recent_history = current_messages[-5:]
     history_tuples = []
 
