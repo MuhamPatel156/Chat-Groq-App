@@ -1,0 +1,10 @@
+langchain
+langchain-groq
+
+groq
+
+python-dotenv
+
+streamlit
+
+psycopg2-binary
