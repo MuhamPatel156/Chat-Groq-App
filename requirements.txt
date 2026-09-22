@@ -1,8 +1,0 @@
-langchain
-langchain-groq
-
-dotenv
-
-streamlit
-
-supabase
